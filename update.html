@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baby Melisha Daily Check</title>
 <style>
     body {
@@ -142,6 +143,23 @@
     #feedModal .modal-content button:hover {
         background: #ddd;
     }
+
+    /* ----------- MOBILE RESPONSIVE ----------- */
+    @media (max-width: 600px) {
+        #updates { width: 95%; }
+        .row span { font-size: 16px; }
+        .row img { width: 30px; height: 30px; }
+
+        footer a img { width: 28px; height: 28px; }
+        footer { padding: 8px; }
+
+        #main h2 { font-size: 22px; }
+
+        #feedModal .modal-content button {
+            width: 80%;
+            margin: 8px 0;
+        }
+    }
 </style>
 </head>
 <body>
@@ -229,3 +247,4 @@ function setFeed(qty) {
 
 </body>
 </html>
+
