@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baby Melisha Daily Check</title>
+
 <style>
     body {
         margin: 0;
@@ -14,12 +15,10 @@
         overflow: hidden;
         color: black;
     }
-
-    /* SPLASH SCREEN */
+    /* SPLASH */
     #splash {
         position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
+        inset: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -36,8 +35,6 @@
         background-position: center;
         opacity: 0;
         animation: fadeIn 2.5s forwards;
-        animation-delay: 0s;
-        z-index: 1;
     }
     #splash h1 {
         position: relative;
@@ -47,164 +44,118 @@
         opacity: 0;
         animation: fadeIn 2s forwards;
         animation-delay: 2s;
-        padding: 10px 20px;
-        border-radius: 12px;
     }
     @keyframes fadeIn { to { opacity: 1; } }
     @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
-    /* MAIN CONTENT */
-    #main {
-        padding-top: 50px;
-        opacity: 0;
-        transition: 0.6s;
-    }
-    body.show-content #main {
-        opacity: 1;
-    }
+    /* MAIN */
+    #main { padding-top: 50px; opacity: 0; transition: 0.6s; }
+    body.show-content #main { opacity: 1; }
 
-    /* LIST STYLE */
-    #updates {
-        width: 80%;
-        margin: 0 auto;
-        text-align: left;
-    }
+    /* LIST */
+    #updates { width: 80%; margin: 0 auto; text-align: left; }
     .row {
-        display: flex;
-        align-items: center;
-        background: #fff;
-        margin: 20px 0;
-        padding: 10px;
-        border-radius: 12px;
-        box-shadow: 0px 3px 6px #00000030;
+        display: flex; align-items: center;
+        background: #fff; margin: 20px 0; padding: 10px;
+        border-radius: 12px; box-shadow: 0 3px 6px #00000030;
     }
-    .row img {
-        width: 56px;
-        height: 56px;
-        margin-right: 10px;
-    }
-    .row span {
-        font-size: 28px;
-    }
+    .row img { width: 56px; margin-right: 10px; }
+    .row span { font-size: 24px; }
 
-    /* FOOTER ICON LINKS */
+    /* FOOTER */
     footer {
-        position: fixed;
-        bottom: 0; left: 0;
-        width: 100%;
-        display: flex;
-        justify-content: space-around;
-        padding: 12px;
-        background: #000;
+        position: fixed; bottom: 0; width: 100%;
+        display: flex; justify-content: space-around;
+        background: black; padding: 12px;
     }
     footer a {
-        width: 22%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        padding: 12px;
-        border-radius: 8px;
-        transition: 0.2s;
+        width: 22%; display: flex;
+        align-items: center; justify-content: center;
+        padding: 10px; border-radius: 8px;
     }
-    footer a img {
-        width: 32px;
-        height: 32px;
-    }
-    footer a:active {
-        background: #ffffff66;
-    }
+    footer a:active { background: #ffffff66; }
+    footer img { width: 32px; }
 
     /* MODAL */
     #feedModal {
-        display: none;
-        position: fixed;
-        inset: 0;
+        display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.4);
-        justify-content: center;
-        align-items: center;
+        justify-content: center; align-items: center;
         z-index: 20;
     }
     #feedModal .modal-content {
-        background: white;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
+        background: white; padding: 20px; border-radius: 12px;
     }
-    #feedModal .modal-content button {
-        margin: 10px;
-        padding: 12px 20px;
-        font-size: 16px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-    #feedModal .modal-content button:hover {
-        background: #ddd;
+    #feedModal button {
+        margin: 10px; padding: 12px 20px;
+        font-size: 16px; border-radius: 8px;
     }
 
-    /* ----------- MOBILE RESPONSIVE ----------- */
-    @media (max-width: 600px) {
-        #updates { width: 95%; }
-        .row span { font-size: 16px; }
-        .row img { width: 30px; height: 30px; }
-
-        footer a img { width: 28px; height: 28px; }
-        footer { padding: 8px; }
-
-        #main h2 { font-size: 22px; }
-
-        #feedModal .modal-content button {
-            width: 80%;
-            margin: 8px 0;
-        }
+    @media(max-width:600px){
+        #updates{width:95%;}
+        .row span{font-size:18px;}
+        .row img{width:28px;}
+        footer img{width:26px;}
     }
 </style>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAIlkvwyaF6FPPbXBJDqHwuTS5S3QKG3l8",
+  authDomain: "xoxo-store.firebaseapp.com",
+  databaseURL: "https://xoxo-store-default-rtdb.firebaseio.com",
+  projectId: "xoxo-store",
+  storageBucket: "xoxo-store.firebasestorage.app",
+  messagingSenderId: "667290233046",
+  appId: "1:667290233046:web:dbbc9130ff38b0900f8177",
+  measurementId: "G-XMJVCK8KMD"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* Real-time display */
+["feedTime","diaperTime","bathTime","poopTime"].forEach(id=>{
+    const r = ref(db, id);
+    onValue(r, snap => {
+        document.getElementById(id).innerText = snap.val() ?? "--";
+    });
+});
+
+/* Save to RTDB */
+window.saveData = function(id,value){ set(ref(db,id),value); }
+
+</script>
 </head>
+
 <body>
 
-<!-- SPLASH SCREEN -->
+<!-- SPLASH -->
 <div id="splash">
     <div class="bg"></div>
     <h1>Baby Melisha Daily Check</h1>
 </div>
 
-<!-- MAIN CONTENT -->
+<!-- MAIN -->
 <div id="main">
     <h2>Last Updates</h2>
     <div id="updates">
-
-        <div class="row">
-            <img src="https://imgur.com/c0cxvIJ.png"><span id="feedTime">--</span>
-        </div>
-        <div class="row">
-            <img src="https://imgur.com/61JyV95.png"><span id="diaperTime">--</span>
-        </div>
-        <div class="row">
-            <img src="https://imgur.com/eulE9HC.png"><span id="bathTime">--</span>
-        </div>
-        <div class="row">
-            <img src="https://imgur.com/DVe5dVU.png"><span id="poopTime">--</span>
-        </div>
-
+        <div class="row"><img src="https://imgur.com/c0cxvIJ.png"><span id="feedTime">--</span></div>
+        <div class="row"><img src="https://imgur.com/61JyV95.png"><span id="diaperTime">--</span></div>
+        <div class="row"><img src="https://imgur.com/eulE9HC.png"><span id="bathTime">--</span></div>
+        <div class="row"><img src="https://imgur.com/DVe5dVU.png"><span id="poopTime">--</span></div>
     </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
-    <a href="#" onclick="openFeedModal()">
-        <img src="https://imgur.com/c0cxvIJ.png" alt="Feed">
-    </a>
-    <a href="#" onclick="updateTime('diaperTime')">
-        <img src="https://imgur.com/61JyV95.png" alt="Diaper">
-    </a>
-    <a href="#" onclick="updateTime('bathTime')">
-        <img src="https://imgur.com/eulE9HC.png" alt="Bath">
-    </a>
-    <a href="#" onclick="updateTime('poopTime')">
-        <img src="https://imgur.com/DVe5dVU.png" alt="Poop">
-    </a>
+    <a onclick="openFeedModal()"><img src="https://imgur.com/c0cxvIJ.png"></a>
+    <a onclick="updateTime('diaperTime')"><img src="https://imgur.com/61JyV95.png"></a>
+    <a onclick="updateTime('bathTime')"><img src="https://imgur.com/eulE9HC.png"></a>
+    <a onclick="updateTime('poopTime')"><img src="https://imgur.com/DVe5dVU.png"></a>
 </footer>
 
 <!-- FEED MODAL -->
@@ -213,34 +164,31 @@
         <h3>Select Feed Quantity</h3>
         <button onclick="setFeed('1oz')">1oz</button>
         <button onclick="setFeed('2oz')">2oz</button>
-        <button onclick="setFeed('4oz')">4oz</button>
-        <br><br>
+        <button onclick="setFeed('4oz')">4oz</button><br><br>
         <button onclick="closeFeedModal()">Cancel</button>
     </div>
 </div>
 
 <script>
-// Show main content after splash
-setTimeout(() => {
-    document.body.classList.add("show-content");
-}, 4000);
+// Splash show main
+setTimeout(()=>document.body.classList.add("show-content"),4000);
 
-// Update other buttons (with confirm)
+// Confirm + save
 function updateTime(id){
-    if(confirm("Are you sure?")) {
-        document.getElementById(id).innerText = new Date().toLocaleString();
+    if(confirm("Are you sure?")){
+        let v = new Date().toLocaleString();
+        document.getElementById(id).innerText = v;
+        saveData(id,v);
     }
 }
 
-// Feed modal
-function openFeedModal() {
-    document.getElementById('feedModal').style.display = 'flex';
-}
-function closeFeedModal() {
-    document.getElementById('feedModal').style.display = 'none';
-}
-function setFeed(qty) {
-    document.getElementById('feedTime').innerText = `${new Date().toLocaleString()} - ${qty}`;
+// Feed buttons
+function openFeedModal(){ feedModal.style.display="flex"; }
+function closeFeedModal(){ feedModal.style.display="none"; }
+function setFeed(q){
+    let v = new Date().toLocaleString()+" - "+q;
+    document.getElementById("feedTime").innerText = v;
+    saveData("feedTime",v);
     closeFeedModal();
 }
 </script>
