@@ -15,7 +15,8 @@
         overflow: hidden;
         color: black;
     }
-    /* SPLASH */
+
+    /* SPLASH SCREEN */
     #splash {
         position: fixed;
         inset: 0;
@@ -52,15 +53,33 @@
     #main { padding-top: 50px; opacity: 0; transition: 0.6s; }
     body.show-content #main { opacity: 1; }
 
-    /* LIST */
+    /* LIST ITEMS */
     #updates { width: 80%; margin: 0 auto; text-align: left; }
     .row {
         display: flex; align-items: center;
         background: #fff; margin: 20px 0; padding: 10px;
         border-radius: 12px; box-shadow: 0 3px 6px #00000030;
+        cursor: pointer;
     }
     .row img { width: 56px; margin-right: 10px; }
     .row span { font-size: 24px; }
+
+    /* HISTORY BOX */
+    .history-box {
+    display: none;           /* HIDDEN BY DEFAULT */
+    background: #fff;
+    margin: -10px 0 20px;
+    padding: 10px;
+    border-radius: 12px;
+    box-shadow: 0 3px 6px #00000020;
+    font-size: 18px;
+}
+
+    .history-item {
+        border-bottom: 1px solid #ddd;
+        padding: 6px 0;
+    }
+    .history-item:last-child { border-bottom: none; }
 
     /* FOOTER */
     footer {
@@ -76,7 +95,7 @@
     footer a:active { background: #ffffff66; }
     footer img { width: 32px; }
 
-    /* MODAL */
+    /* FEED MODAL */
     #feedModal {
         display: none; position: fixed; inset: 0;
         background: rgba(0,0,0,0.4);
@@ -85,6 +104,7 @@
     }
     #feedModal .modal-content {
         background: white; padding: 20px; border-radius: 12px;
+        text-align: center;
     }
     #feedModal button {
         margin: 10px; padding: 12px 20px;
@@ -99,9 +119,10 @@
     }
 </style>
 
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAIlkvwyaF6FPPbXBJDqHwuTS5S3QKG3l8",
@@ -117,18 +138,52 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* Real-time display */
-["feedTime","diaperTime","bathTime","poopTime"].forEach(id=>{
-    const r = ref(db, id);
+/* DISPLAY LAST ENTRY */
+["feed","diaper","bath","poop"].forEach(name=>{
+    const r = ref(db, name);
     onValue(r, snap => {
-        document.getElementById(id).innerText = snap.val() ?? "--";
+        let list = snap.val();
+        if(list){
+            let last = Object.values(list).slice(-1)[0];
+            document.getElementById(name+"Time").innerText = last;
+        }
     });
 });
 
-/* Save to RTDB */
-window.saveData = function(id,value){ set(ref(db,id),value); }
+/* SAVE NEW HISTORY ITEM */
+window.saveHistory = function(name, value){
+   push(ref(db, name), value);
+}
+
+/* LOAD HISTORY DROPDOWN */window.toggleHistory = function(name){
+    let box = document.getElementById(name+"History");
+
+    // If open → close it
+    if(box.style.display === "block"){
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+    }
+
+    // Otherwise → show history
+    const r = ref(db, name);
+    onValue(r, snap => {
+        let list = snap.val();
+        let html = "";
+        if(list){
+            Object.values(list).reverse().forEach(v=>{
+                html += `<div class="history-item">${v}</div>`;
+            });
+        } else {
+            html = "<div class='history-item'>No history yet</div>";
+        }
+        box.innerHTML = html;
+        box.style.display = "block";  // SHOW
+    });
+}
 
 </script>
+
 </head>
 
 <body>
@@ -143,19 +198,35 @@ window.saveData = function(id,value){ set(ref(db,id),value); }
 <div id="main">
     <h2>Last Updates</h2>
     <div id="updates">
-        <div class="row"><img src="https://imgur.com/c0cxvIJ.png"><span id="feedTime">--</span></div>
-        <div class="row"><img src="https://imgur.com/61JyV95.png"><span id="diaperTime">--</span></div>
-        <div class="row"><img src="https://imgur.com/eulE9HC.png"><span id="bathTime">--</span></div>
-        <div class="row"><img src="https://imgur.com/DVe5dVU.png"><span id="poopTime">--</span></div>
+
+        <div class="row" onclick="toggleHistory('feed')">
+            <img src="https://imgur.com/c0cxvIJ.png"><span id="feedTime">--</span>
+        </div>
+        <div id="feedHistory" class="history-box"></div>
+
+        <div class="row" onclick="toggleHistory('diaper')">
+            <img src="https://imgur.com/61JyV95.png"><span id="diaperTime">--</span>
+        </div>
+        <div id="diaperHistory" class="history-box"></div>
+
+        <div class="row" onclick="toggleHistory('bath')">
+            <img src="https://imgur.com/eulE9HC.png"><span id="bathTime">--</span>
+        </div>
+        <div id="bathHistory" class="history-box"></div>
+
+        <div class="row" onclick="toggleHistory('poop')">
+            <img src="https://imgur.com/DVe5dVU.png"><span id="poopTime">--</span>
+        </div>
+        <div id="poopHistory" class="history-box"></div>
     </div>
 </div>
 
 <!-- FOOTER -->
 <footer>
     <a onclick="openFeedModal()"><img src="https://imgur.com/c0cxvIJ.png"></a>
-    <a onclick="updateTime('diaperTime')"><img src="https://imgur.com/61JyV95.png"></a>
-    <a onclick="updateTime('bathTime')"><img src="https://imgur.com/eulE9HC.png"></a>
-    <a onclick="updateTime('poopTime')"><img src="https://imgur.com/DVe5dVU.png"></a>
+    <a onclick="updateTime('diaper')"><img src="https://imgur.com/61JyV95.png"></a>
+    <a onclick="updateTime('bath')"><img src="https://imgur.com/eulE9HC.png"></a>
+    <a onclick="updateTime('poop')"><img src="https://imgur.com/DVe5dVU.png"></a>
 </footer>
 
 <!-- FEED MODAL -->
@@ -170,25 +241,25 @@ window.saveData = function(id,value){ set(ref(db,id),value); }
 </div>
 
 <script>
-// Splash show main
+/* SHOW MAIN AFTER SPLASH */
 setTimeout(()=>document.body.classList.add("show-content"),4000);
 
-// Confirm + save
-function updateTime(id){
+/* CONFIRM + SAVE */
+function updateTime(name){
     if(confirm("Are you sure?")){
         let v = new Date().toLocaleString();
-        document.getElementById(id).innerText = v;
-        saveData(id,v);
+        document.getElementById(name+"Time").innerText = v;
+        saveHistory(name, v);
     }
 }
 
-// Feed buttons
+/* FEED QUANTITY */
 function openFeedModal(){ feedModal.style.display="flex"; }
 function closeFeedModal(){ feedModal.style.display="none"; }
 function setFeed(q){
     let v = new Date().toLocaleString()+" - "+q;
     document.getElementById("feedTime").innerText = v;
-    saveData("feedTime",v);
+    saveHistory("feed", v);
     closeFeedModal();
 }
 </script>
